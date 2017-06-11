@@ -1,0 +1,230 @@
+         /* >>>>>>>>>>>>>>>>---ARDUINO HOCAM 
+                            HESAP MAKİNESİ UYGULAMASI---<<<<<<<<<<<<<<<<<<<<<*/
+#include <Keypad.h>
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
+
+long num1,num2 ;
+double sonuc;
+char hesaplama,button;
+
+const byte satir = 4;
+const byte sutun = 4;
+
+char tus_takimi[satir][sutun] = {
+  {'1','2','3','+'},
+  {'4','5','6','-'},
+  {'7','8','9','*'},
+  {'C','0','=','/'}
+};
+byte satir_pins[satir] = {A0, A1, A2, A3}; 
+byte sutun_pins[sutun] = {A4, A5, 3, 2}; 
+Keypad tuss_takimi = Keypad(makeKeymap(tus_takimi), satir_pins, sutun_pins, 4, 4);
+
+
+byte customChar9[8] = {  //YÜKLENME EFEKTİ İÇİN OLUŞTURULAN ÖZEL KARAKTERLER
+  
+  0b11111, 
+  0b11111,
+  0b11111,   
+  0b11111,
+  0b11111,
+  0b11111,
+  0b11111,
+  0b11111
+};
+byte customChar8[8] = {
+  0b11110,
+  0b11110,
+  0b11110,
+  0b11110,
+  0b11110,
+  0b11110,
+  0b11110,
+  0b11110
+};
+byte customChar7[8] = {
+  0b11100,
+  0b11100,
+  0b11100,
+  0b11100,
+  0b11100,
+  0b11100,
+  0b11100,
+  0b11100
+};
+byte customChar6[8] = {
+  0b11000,
+  0b11000,
+  0b11000,
+  0b11000,
+  0b11000,
+  0b11000,
+  0b11000,
+  0b11000
+};
+byte customChar5[8] = {
+  0b10000,
+  0b10000,
+  0b10000,
+  0b10000,
+  0b10000,
+  0b10000,
+  0b10000,
+  0b10000
+};
+
+
+
+
+void setup() {
+  
+  lcd.createChar(6, customChar6);
+  lcd.createChar(7, customChar7);
+  lcd.createChar(8, customChar8);
+  lcd.createChar(9, customChar9);
+  lcd.begin(16, 2); // LCD BEGAN
+  lcd.clear();  //Clear screen
+  lcd.clear();
+  lcd.setCursor(1, 0);
+  lcd.print("ARDUINO HOCAM");
+  
+  for (int i = 1; i <= 13; i++)  
+  {
+
+
+    for (int k = 6; k <= 9; k++)
+    {
+      lcd.setCursor(i, 1); lcd.write((uint8_t)k);
+      delay(100);
+
+    }
+
+  }
+
+  lcd.clear();
+  lcd.setCursor(0, 0); 
+  lcd.print("Arduino Hocam");
+  lcd.setCursor(0, 1);
+  lcd.print("HESAP MAKINESI");   
+  delay(2000);
+  lcd.clear();  
+ 
+
+lcd.begin(16,2); 
+}
+
+void loop()
+{
+   lcd.cursor();
+          lcd.blink();
+  
+     
+    while(1) //İlk döngü 1.numarayı almak için.işlem işareti girilene kadar çalışıyor ya da C yapılana kadar
+    {
+
+        
+        button = tuss_takimi.getKey(); // Butonu okuduk.
+        if (button=='C') // Eğer yazarken resetleemk istenirse
+        {
+          num1=0;
+          num2=0;
+          sonuc=0;
+          hesaplama=0;
+          lcd.clear();
+        }
+        
+        if (button >='0' && button <='9') // basılan nümerik değerler
+        {
+          num1 = num1*10 + (button -'0'); // ASCII tablosu 
+         
+          lcd.setCursor(0,0); // Select first row on lcd
+          lcd.print(num1); // 
+        }
+        if (num1 !=0 && (button=='-' || button=='+' || button=='*' || button=='/')) // Eğer numara girişi bitmişse
+        {
+          hesaplama = button; // matematiksel işlemi seçiyoruz
+          lcd.setCursor(0,1);
+       
+          lcd.print(hesaplama);
+     
+          break;
+        }
+
+    }
+    
+    while(1) // Kullanıcı '=' ya da 'C' işlemini yapana kadar çalışıyor
+    {
+        if (button =='C'){break;} // İşlem operatörüne bastıktan sonra da sıfırlamak için
+        button = tuss_takimi.getKey();
+        if (button=='C') // Sıfırlamayı kesinleştiriyoruz
+        {
+          num1=0;
+          num2=0;
+          sonuc=0;
+          hesaplama=0;
+          lcd.clear();
+          break;
+        }
+        if (button >='0' && button <='9') 
+        {
+          num2 = num2*10 + (button -'0');
+          lcd.setCursor(1,1);
+          lcd.print(num2);
+        }
+        if (button == '=' && num2 !=0)// Eğer '=' e basılırısa artık işlemler bitiyor ve fonksiyonu cağırıyor. 
+        {
+          islem();
+                   
+          break;  
+        }
+    }
+    while(1) 
+    {
+      //bunlardan sonra yine C ye basılırsa temizliyor ....
+      if (button =='C'){break;}
+      button = tuss_takimi.getKey();
+      if (button =='C') 
+        {
+           lcd.clear();
+           lcd.setCursor(0,0);
+           num1=0;
+           num2=0;
+           sonuc=0;
+           hesaplama=0;
+           break;
+        }
+    }
+
+}
+void islem() // Yaptırılacak fonksiyon.
+{
+  switch(hesaplama)
+    {
+      case '+': // toplama
+          sonuc = num1+num2;
+          break;
+      
+      case '-': // Çıkarma
+          sonuc = num1-num2;
+          break;
+      
+      case '/': //Bölme
+          sonuc = (float)num1/(float)num2;
+         
+          break;
+      
+      case '*': // Çarpma
+          sonuc = num1*num2;
+          break;
+          
+    }
+    
+    lcd.clear();
+    lcd.setCursor(0,1);
+    lcd.print('=');
+    lcd.setCursor(1,1);
+    
+    lcd.print(sonuc);
+    
+} 
